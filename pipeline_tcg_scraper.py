@@ -110,12 +110,16 @@ async def get_opcg_links(search_word, rarity):
         await browser.close()
 
 async def scrape_ptcg():
+    # ptcg_rarity_table = {
+    #     'UR': ['sv10','sv09a','sv09','sv08a','sv08','sv07a','sv07','sv06a','sv06','sv05a','sv05k','sv05m','sv04a','sv04k','sv04m','sv03a','sv03','sv02a','sv02p','sv02d','sv01a','sv01s','sv01v','s12a'],
+    #     'SAR': ['sv10','sv09a','sv09','sv08a','sv08','sv07a','sv07','sv06a','sv06','sv05a','sv05k','sv05m','sv04a','sv04k','sv04m','sv03a','sv03','sv02a','sv02p','sv02d','sv01a','sv01s','sv01v','s12a'],
+    #     'SR': ['sv10','sv09a','sv09','sv08a','sv08','sv07a','sv07','sv06a','sv06','sv05a','sv05k','sv05m','sv04a','sv04k','sv04m','sv03a','sv03','sv02a','sv02p','sv02d','sv01a','sv01s','sv01v','s12a'],
+    #     'AR': ['sv10','sv09a','sv09','sv08a','sv08','sv07a','sv07','sv06a','sv06','sv05a','sv05k','sv05m','sv04a','sv04k','sv04m','sv03a','sv03','sv02a','sv02p','sv02d','sv01a','sv01s','sv01v','s12a'],
+    #     'S-TD': ['svg']
+    # }
+
     ptcg_rarity_table = {
-        'UR': ['sv10','sv09a','sv09','sv08a','sv08','sv07a','sv07','sv06a','sv06','sv05a','sv05k','sv05m','sv04a','sv04k','sv04m','sv03a','sv03','sv02a','sv02p','sv02d','sv01a','sv01s','sv01v','s12a'],
-        'SAR': ['sv10','sv09a','sv09','sv08a','sv08','sv07a','sv07','sv06a','sv06','sv05a','sv05k','sv05m','sv04a','sv04k','sv04m','sv03a','sv03','sv02a','sv02p','sv02d','sv01a','sv01s','sv01v','s12a'],
-        'SR': ['sv10','sv09a','sv09','sv08a','sv08','sv07a','sv07','sv06a','sv06','sv05a','sv05k','sv05m','sv04a','sv04k','sv04m','sv03a','sv03','sv02a','sv02p','sv02d','sv01a','sv01s','sv01v','s12a'],
-        'AR': ['sv10','sv09a','sv09','sv08a','sv08','sv07a','sv07','sv06a','sv06','sv05a','sv05k','sv05m','sv04a','sv04k','sv04m','sv03a','sv03','sv02a','sv02p','sv02d','sv01a','sv01s','sv01v','s12a'],
-        'S-TD': ['svg']
+        'UR': ['sv10']
     }
 
     links = []
@@ -151,8 +155,10 @@ async def scrape_ptcg():
     return pkm_df
 
 async def scrape_opcg():
-    rarities = ['P-SEC', 'SEC', 'P-SR', 'P-R', 'P-L', 'SP', '-']
+    # rarities = ['P-SEC', 'SEC', 'P-SR', 'P-R', 'P-L', 'SP', '-']
     
+    rarities = ['P-SEC']
+
     links = []
     for rarity in rarities:
         search_word = 'スーパーパラレル' if rarity == '-' else ''
