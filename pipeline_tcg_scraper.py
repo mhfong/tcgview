@@ -48,11 +48,30 @@ def extract_card_price(content):
     return None
 
 async def extract_content(tcg_type, card_set, i):
-    browser = await launch(
-        headless=True,
-        executablePath='/usr/bin/chromium-browser',
-        args=['--no-sandbox', '--disable-setuid-sandbox']
-    )
+    try:
+        browser = await launch(
+            headless=True,
+            executablePath='/usr/bin/chromium-browser',
+            args=[
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-gpu',
+                '--disable-dev-shm-usage',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding'
+            ],
+            handleSIGINT=False,
+            handleSIGTERM=False,
+            handleSIGHUP=False
+        )
+        # Rest of the function
+    except Exception as e:
+        print(f"Failed to launch browser: {e}")
+        return None
+    finally:
+        if 'browser' in locals():
+            await browser.close()
     try:
         page = await browser.newPage()
         await page.goto(f'https://yuyu-tei.jp/sell/{tcg_type}/card/{card_set}/{i}', timeout=60000)
@@ -70,11 +89,30 @@ async def extract_content(tcg_type, card_set, i):
         await browser.close()
 
 async def get_ptcg_links(vers, rarity):
-    browser = await launch(
-        headless=True,
-        executablePath='/usr/bin/chromium-browser',
-        args=['--no-sandbox', '--disable-setuid-sandbox']
-    )
+    try:
+        browser = await launch(
+            headless=True,
+            executablePath='/usr/bin/chromium-browser',
+            args=[
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-gpu',
+                '--disable-dev-shm-usage',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding'
+            ],
+            handleSIGINT=False,
+            handleSIGTERM=False,
+            handleSIGHUP=False
+        )
+        # Rest of the function
+    except Exception as e:
+        print(f"Failed to launch browser: {e}")
+        return None
+    finally:
+        if 'browser' in locals():
+            await browser.close()
     try:
         page = await browser.newPage()
         await page.goto(f'https://yuyu-tei.jp/sell/poc/s/search?search_word={vers}&rare={rarity}&type=&kizu=0', timeout=60000)
@@ -90,11 +128,30 @@ async def get_ptcg_links(vers, rarity):
         await browser.close()
 
 async def get_opcg_links(search_word, rarity):
-    browser = await launch(
-        headless=True,
-        executablePath='/usr/bin/chromium-browser',
-        args=['--no-sandbox', '--disable-setuid-sandbox']
-    )
+    try:
+        browser = await launch(
+            headless=True,
+            executablePath='/usr/bin/chromium-browser',
+            args=[
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-gpu',
+                '--disable-dev-shm-usage',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding'
+            ],
+            handleSIGINT=False,
+            handleSIGTERM=False,
+            handleSIGHUP=False
+        )
+        # Rest of the function
+    except Exception as e:
+        print(f"Failed to launch browser: {e}")
+        return None
+    finally:
+        if 'browser' in locals():
+            await browser.close()
     try:
         page = await browser.newPage()
         await page.goto(f'https://yuyu-tei.jp/sell/opc/s/search?search_word={search_word}&rare={rarity}&type=&kizu=0', timeout=60000)
