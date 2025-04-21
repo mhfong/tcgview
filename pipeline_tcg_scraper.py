@@ -1,6 +1,6 @@
 import asyncio
 import nest_asyncio
-import re
+import re, os
 from datetime import datetime
 from pyppeteer import launch
 import pandas as pd
@@ -208,7 +208,17 @@ async def scrape_ptcg():
             created_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             pkm_df.loc[len(pkm_df)] = [card_set, card_rarity, card_name, card_index, card_price, created_time]
 
-    pkm_df.to_csv(f'{ptcg_result_path}/{datetime.now().strftime("%Y%m%d")}.csv', index=False, encoding='utf-8-sig')
+    os.makedirs(ptcg_result_path, exist_ok=True)
+    
+    # Check if DataFrame is empty
+    if pkm_df.empty:
+        print("No PTCG data collected, skipping CSV save")
+        return pkm_df
+    
+    # Save CSV
+    csv_path = f'{ptcg_result_path}/{datetime.now().strftime("%Y%m%d")}.csv'
+    print(f"Saving PTCG data to {csv_path}")
+    pkm_df.to_csv(csv_path, index=False, encoding='utf-8-sig')
     return pkm_df
 
 async def scrape_opcg():
@@ -242,7 +252,17 @@ async def scrape_opcg():
             created_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             op_df.loc[len(op_df)] = [card_set, card_rarity, card_name, card_index, card_price, created_time]
 
-    op_df.to_csv(f'{opcg_result_path}/{datetime.now().strftime("%Y%m%d")}.csv', index=False, encoding='utf-8-sig')
+    os.makedirs(opcg_result_path, exist_ok=True)
+    
+    # Check if DataFrame is empty
+    if op_df.empty:
+        print("No OPCG data collected, skipping CSV save")
+        return op_df
+    
+    # Save CSV
+    csv_path = f'{opcg_result_path}/{datetime.now().strftime("%Y%m%d")}.csv'
+    print(f"Saving OPCG data to {csv_path}")
+    op_df.to_csv(csv_path, index=False, encoding='utf-8-sig')
     return op_df
 
 async def main():
