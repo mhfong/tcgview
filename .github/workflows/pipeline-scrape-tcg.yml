@@ -2,7 +2,7 @@ name: Scrape TCG Data
 
 on:
   schedule:
-    - cron: '0 18 * * *' # Runs at 18:00 UTC (2:00 AM HKT) daily
+    - cron: '0 18 15 * *' # Runs at 18:00 UTC (2:00 AM HKT) daily
   workflow_dispatch: # Allows manual triggering
 
 jobs:
