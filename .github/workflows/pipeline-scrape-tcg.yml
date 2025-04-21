@@ -1,0 +1,43 @@
+name: Scrape TCG Data
+
+on:
+  schedule:
+    - cron: '0 18 * * *' # Runs at 18:00 UTC (2:00 AM HKT) daily
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
+
+      - name: Set up Pyppeteer
+        run: |
+          python -m pyppeteer.install
+
+      - name: Run the scraper script
+        run: |
+          python pipeline_tcg_scraper.py
+
+      - name: Commit and push CSV files
+        run: |
+          git config --local user.email "mhfong@connect.ust.hk"
+          git config --local user.name "mhfong"
+          git add data/ptcg/*.csv data/opcg/*.csv
+          git diff-index --quiet HEAD || (git commit -m "Add daily TCG data CSVs" --allow-empty)
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
