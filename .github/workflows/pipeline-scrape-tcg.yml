@@ -8,7 +8,7 @@ on:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' # Run only on dev branch
+    if: github.ref == 'refs/heads/dev'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -18,44 +18,30 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.8' # Changed to Python 3.8
+          python-version: '3.8'
 
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y chromium-browser
-          if ! command -v chromium-browser &> /dev/null; then
-            echo "Chromium installation failed"
-            exit 1
-          fi
-
-      - name: Debug Chromium installation
-        run: |
-          apt-cache policy chromium-browser
-          which chromium-browser
-          ls -l /usr/bin/chromium-browser || echo "Chromium not found in /usr/bin"
-          ls -l /usr/lib/chromium-browser || echo "Chromium not found in /usr/lib"
-          chromium-browser --version || echo "Failed to run chromium-browser"
 
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install --no-cache-dir -r requirements.txt
-        env:
-          PIP_NO_CACHE_DIR: 1 # Prevent stale packages
+          playwright install chromium
 
       - name: Debug Python dependencies
         run: |
           python --version
           pip list
-          python -c "import pandas, numpy, pyppeteer; print(f'pandas: {pandas.__version__}, numpy: {numpy.__version__}, pyppeteer: {pyppeteer.__version__}')"
+          python -c "import pandas, numpy, playwright; print(f'pandas: {pandas.__version__}, numpy: {numpy.__version__}, playwright: {playwright.__version__}')"
 
       - name: Run the scraper script
         run: |
           python pipeline_tcg_scraper.py
 
       - name: Debug CSV files
-        if: always() # Run even if script fails
+        if: always()
         run: |
           ls -R data/ || echo "No CSV files found"
 
@@ -64,8 +50,13 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add data/ptcg/*.csv data/opcg/*.csv
-          git diff-index --quiet HEAD || (git commit -m "Add daily TCG data CSVs" --allow-empty)
-          git push
+          # Add files only if they exist
+          if ls data/ptcg/*.csv data/opcg/*.csv 2>/dev/null; then
+            git add data/ptcg/*.csv data/opcg/*.csv
+            git diff-index --quiet HEAD || (git commit -m "Add daily TCG data CSVs" --allow-empty)
+            git push
+          else
+            echo "No CSV files to commit"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

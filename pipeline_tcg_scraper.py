@@ -2,7 +2,7 @@ import asyncio
 import nest_asyncio
 import re, os
 from datetime import datetime
-from pyppeteer import launch
+from playwright.async_api import async_playwright
 import pandas as pd
 from path import *
 
@@ -48,64 +48,83 @@ def extract_card_price(content):
     return None
 
 async def extract_content(tcg_type, card_set, i):
-    browser = await launch(headless=True)
-    try:
-        page = await browser.newPage()
-        await page.goto(f'https://yuyu-tei.jp/sell/{tcg_type}/card/{card_set}/{i}', timeout=60000)
-        await page.waitForSelector('.fw-bold', timeout=60000)
-        print(f'https://yuyu-tei.jp/sell/{tcg_type}/card/{card_set}/{i}')
-        fw_bold_texts = await page.evaluate('''() => {
-            const boldElements = document.querySelectorAll('.fw-bold');
-            return Array.from(boldElements).map(element => element.innerText).join('\\n');
-        }''')
-        return fw_bold_texts
-    except Exception as e:
-        print(f"Error for {card_set}/{i}: {e}")
-        return None
-    finally:
-        await browser.close()
+    print(f"Extracting content for {tcg_type}/{card_set}/{i}")
+    for attempt in range(3):
+        print(f"Attempt {attempt+1}/3")
+        try:
+            async with async_playwright() as p:
+                browser = await p.chromium.launch(
+                    headless=True,
+                    args=['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+                )
+                page = await browser.new_page()
+                await page.goto(f'https://yuyu-tei.jp/sell/{tcg_type}/card/{card_set}/{i}', timeout=60000)
+                await page.wait_for_selector('.fw-bold', timeout=60000)
+                print(f"Page loaded: https://yuyu-tei.jp/sell/{tcg_type}/card/{card_set}/{i}")
+                fw_bold_texts = await page.evaluate('''() => {
+                    const boldElements = document.querySelectorAll('.fw-bold');
+                    return Array.from(boldElements).map(element => element.innerText).join('\\n');
+                }''')
+                return fw_bold_texts
+        except Exception as e:
+            print(f"Attempt {attempt+1} failed: {e}")
+            if attempt < 2:
+                await asyncio.sleep(5)
+            continue
+    print("All attempts to extract content failed")
+    return None
 
 async def get_ptcg_links(vers, rarity):
-    browser = await launch(headless=True)
-    try:
-        page = await browser.newPage()
-        await page.goto(f'https://yuyu-tei.jp/sell/poc/s/search?search_word={vers}&rare={rarity}&type=&kizu=0', timeout=60000)
-        hyperlinks = await page.evaluate('''() => {
-            const links = document.querySelectorAll('a');
-            return Array.from(links).map(link => link.href);
-        }''')
-        return hyperlinks
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
-    finally:
-        await browser.close()
+    print(f"Launching browser for PTCG links: {vers}, {rarity}")
+    for attempt in range(3):
+        print(f"Attempt {attempt+1}/3")
+        try:
+            async with async_playwright() as p:
+                browser = await p.chromium.launch(
+                    headless=True,
+                    args=['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+                )
+                page = await browser.new_page()
+                await page.goto(f'https://yuyu-tei.jp/sell/poc/s/search?search_word={vers}&rare={rarity}&type=&kizu=0', timeout=60000)
+                hyperlinks = await page.evaluate('''() => {
+                    const links = document.querySelectorAll('a');
+                    return Array.from(links).map(link => link.href);
+                }''')
+                return hyperlinks
+        except Exception as e:
+            print(f"Attempt {attempt+1} failed: {e}")
+            if attempt < 2:
+                await asyncio.sleep(5)
+            continue
+    print("All attempts to launch browser failed")
+    return []
 
 async def get_opcg_links(search_word, rarity):
-    browser = await launch(headless=True)
-    try:
-        page = await browser.newPage()
-        await page.goto(f'https://yuyu-tei.jp/sell/opc/s/search?search_word={search_word}&rare={rarity}&type=&kizu=0', timeout=60000)
-        hyperlinks = await page.evaluate('''() => {
-            const links = document.querySelectorAll('a');
-            return Array.from(links).map(link => link.href);
-        }''')
-        return hyperlinks
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
-    finally:
-        await browser.close()
+    print(f"Launching browser for OPCG links: {search_word}, {rarity}")
+    for attempt in range(3):
+        print(f"Attempt {attempt+1}/3")
+        try:
+            async with async_playwright() as p:
+                browser = await p.chromium.launch(
+                    headless=True,
+                    args=['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+                )
+                page = await browser.new_page()
+                await page.goto(f'https://yuyu-tei.jp/sell/opc/s/search?search_word={search_word}&rare={rarity}&type=&kizu=0', timeout=60000)
+                hyperlinks = await page.evaluate('''() => {
+                    const links = document.querySelectorAll('a');
+                    return Array.from(links).map(link => link.href);
+                }''')
+                return hyperlinks
+        except Exception as e:
+            print(f"Attempt {attempt+1} failed: {e}")
+            if attempt < 2:
+                await asyncio.sleep(5)
+            continue
+    print("All attempts to launch browser failed")
+    return []
 
 async def scrape_ptcg():
-    # ptcg_rarity_table = {
-    #     'UR': ['sv10','sv09a','sv09','sv08a','sv08','sv07a','sv07','sv06a','sv06','sv05a','sv05k','sv05m','sv04a','sv04k','sv04m','sv03a','sv03','sv02a','sv02p','sv02d','sv01a','sv01s','sv01v','s12a'],
-    #     'SAR': ['sv10','sv09a','sv09','sv08a','sv08','sv07a','sv07','sv06a','sv06','sv05a','sv05k','sv05m','sv04a','sv04k','sv04m','sv03a','sv03','sv02a','sv02p','sv02d','sv01a','sv01s','sv01v','s12a'],
-    #     'SR': ['sv10','sv09a','sv09','sv08a','sv08','sv07a','sv07','sv06a','sv06','sv05a','sv05k','sv05m','sv04a','sv04k','sv04m','sv03a','sv03','sv02a','sv02p','sv02d','sv01a','sv01s','sv01v','s12a'],
-    #     'AR': ['sv10','sv09a','sv09','sv08a','sv08','sv07a','sv07','sv06a','sv06','sv05a','sv05k','sv05m','sv04a','sv04k','sv04m','sv03a','sv03','sv02a','sv02p','sv02d','sv01a','sv01s','sv01v','s12a'],
-    #     'S-TD': ['svg']
-    # }
-
     ptcg_rarity_table = {
         'UR': ['sv10']
     }
@@ -117,9 +136,12 @@ async def scrape_ptcg():
         if all_links:
             cleaned_links = [url for url in all_links if any(val in url for val in ptcg_rarity_table[rarity]) and 'card' in url]
             links += cleaned_links
+        else:
+            print(f"No links found for rarity {rarity}")
 
     links = list(set(links))
     sorted_links = sorted(links, key=lambda x: (x.split('/card/')[1].split('/')[0], int(x.split('/')[-1])))
+    print(f"Collected {len(links)} PTCG links")
 
     pkm_df = pd.DataFrame(columns=['card_set', 'card_rarity', 'card_name', 'card_index', 'card_price', 'created_time'])
     
@@ -127,12 +149,13 @@ async def scrape_ptcg():
         tcg_type = link.split('/')[-4]
         card_set = link.split('/')[-2]
         i = link.split('/')[-1]
-        print(f'{idx}/{len(sorted_links)}')
+        print(f'Processing {idx}/{len(sorted_links)}')
         content = await extract_content(tcg_type, card_set, i)
         if content:
             try:
                 card_rarity, card_name = extract_ptcg_rarity_and_card_name(content)
             except:
+                print(f"Failed to extract rarity/name for {link}")
                 continue
             card_index = extract_ptcg_card_index(content)
             card_price = extract_card_price(content)
@@ -141,29 +164,31 @@ async def scrape_ptcg():
 
     os.makedirs(ptcg_result_path, exist_ok=True)
     
-    # Check if DataFrame is empty
     if pkm_df.empty:
         print("No PTCG data collected, skipping CSV save")
         return pkm_df
     
-    # Save CSV
     csv_path = f'{ptcg_result_path}/{datetime.now().strftime("%Y%m%d")}.csv'
     print(f"Saving PTCG data to {csv_path}")
     pkm_df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+    print(f"Saved {len(pkm_df)} rows to {csv_path}")
     return pkm_df
 
 async def scrape_opcg():
-    # rarities = ['P-SEC', 'SEC', 'P-SR', 'P-R', 'P-L', 'SP', '-']
-    
     rarities = ['P-SEC']
 
     links = []
     for rarity in rarities:
         search_word = 'スーパーパラレル' if rarity == '-' else ''
-        links += await get_opcg_links(search_word, rarity)
+        all_links = await get_opcg_links(search_word, rarity)
+        if all_links:
+            links += all_links
+        else:
+            print(f"No links found for rarity {rarity}")
     
     links = list(set(sorted([l for l in links if 'card' in l])))
     sorted_links = sorted(links, key=lambda x: (x.split('/card/')[1].split('/')[0], int(x.split('/')[-1])))
+    print(f"Collected {len(links)} OPCG links")
 
     op_df = pd.DataFrame(columns=['card_set', 'card_rarity', 'card_name', 'card_index', 'card_price', 'created_time'])
 
@@ -171,12 +196,13 @@ async def scrape_opcg():
         tcg_type = link.split('/')[-4]
         card_set = link.split('/')[-2]
         i = link.split('/')[-1]
-        print(f'{idx}/{len(sorted_links)}')
+        print(f'Processing {idx}/{len(sorted_links)}')
         content = await extract_content(tcg_type, card_set, i)
         if content:
             try:
                 card_rarity, card_name = extract_opcg_rarity_and_card_name(content)
             except:
+                print(f"Failed to extract rarity/name for {link}")
                 continue
             card_index = extract_opcg_card_index(content)
             card_price = extract_card_price(content)
@@ -185,22 +211,24 @@ async def scrape_opcg():
 
     os.makedirs(opcg_result_path, exist_ok=True)
     
-    # Check if DataFrame is empty
     if op_df.empty:
         print("No OPCG data collected, skipping CSV save")
         return op_df
     
-    # Save CSV
     csv_path = f'{opcg_result_path}/{datetime.now().strftime("%Y%m%d")}.csv'
     print(f"Saving OPCG data to {csv_path}")
     op_df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+    print(f"Saved {len(op_df)} rows to {csv_path}")
     return op_df
 
 async def main():
+    print(f"Starting TCG scraper at {datetime.now()}")
     print("Scraping PTCG data...")
-    await scrape_ptcg()
+    ptcg_df = await scrape_ptcg()
+    print(f"PTCG scraping completed: {len(ptcg_df)} rows")
     print("Scraping OPCG data...")
-    await scrape_opcg()
+    opcg_df = await scrape_opcg()
+    print(f"OPCG scraping completed: {len(opcg_df)} rows")
 
 if __name__ == "__main__":
     asyncio.run(main())
