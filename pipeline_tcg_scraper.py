@@ -85,6 +85,7 @@ async def get_ptcg_links(vers, rarity):
                     args=['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
                 )
                 page = await browser.new_page()
+                print(f'https://yuyu-tei.jp/sell/poc/s/search?search_word={vers}&rare={rarity}&type=&kizu=0')
                 await page.goto(f'https://yuyu-tei.jp/sell/poc/s/search?search_word={vers}&rare={rarity}&type=&kizu=0', timeout=60000)
                 hyperlinks = await page.evaluate('''() => {
                     const links = document.querySelectorAll('a');
@@ -110,6 +111,7 @@ async def get_opcg_links(search_word, rarity):
                     args=['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
                 )
                 page = await browser.new_page()
+                print(f'https://yuyu-tei.jp/sell/opc/s/search?search_word={search_word}&rare={rarity}&type=&kizu=0')
                 await page.goto(f'https://yuyu-tei.jp/sell/opc/s/search?search_word={search_word}&rare={rarity}&type=&kizu=0', timeout=60000)
                 hyperlinks = await page.evaluate('''() => {
                     const links = document.querySelectorAll('a');
