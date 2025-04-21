@@ -13,12 +13,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: dev # Explicitly check out dev branch
+          ref: dev # Check out dev branch
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # Use Python 3.10 for better compatibility
+          python-version: '3.10' # Use Python 3.10
 
       - name: Install system dependencies
         run: |
@@ -39,7 +39,15 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install --no-cache-dir -r requirements.txt
+        env:
+          PIP_NO_CACHE_DIR: 1 # Disable pip caching to avoid stale packages
+
+      - name: Debug Python dependencies
+        run: |
+          python --version
+          pip list
+          python -c "import pandas, numpy; print(f'pandas: {pandas.__version__}, numpy: {numpy.__version__}')"
 
       - name: Run the scraper script
         run: |

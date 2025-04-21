@@ -50,7 +50,7 @@ def extract_card_price(content):
 async def extract_content(tcg_type, card_set, i):
     browser = await launch(
         headless=True,
-        executablePath='/usr/lib/chromium-browser/chromium-browser',
+        executablePath='/usr/bin/chromium-browser',
         args=['--no-sandbox', '--disable-setuid-sandbox']
     )
     try:
@@ -72,7 +72,7 @@ async def extract_content(tcg_type, card_set, i):
 async def get_ptcg_links(vers, rarity):
     browser = await launch(
         headless=True,
-        executablePath='/usr/lib/chromium-browser/chromium-browser',
+        executablePath='/usr/bin/chromium-browser',
         args=['--no-sandbox', '--disable-setuid-sandbox']
     )
     try:
@@ -92,7 +92,7 @@ async def get_ptcg_links(vers, rarity):
 async def get_opcg_links(search_word, rarity):
     browser = await launch(
         headless=True,
-        executablePath='/usr/lib/chromium-browser/chromium-browser',
+        executablePath='/usr/bin/chromium-browser',
         args=['--no-sandbox', '--disable-setuid-sandbox']
     )
     try:
