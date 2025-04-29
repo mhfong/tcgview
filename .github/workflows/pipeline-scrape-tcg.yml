@@ -1,63 +1,63 @@
-name: Scrape TCG Data
+# name: Scrape TCG Data
 
-on:
-  schedule:
-    - cron: '0 18 * * *' # 2:00 AM HKT (18:00 UTC)
-  workflow_dispatch:
+# on:
+#   schedule:
+#     - cron: '0 18 * * *' # 2:00 AM HKT (18:00 UTC)
+#   workflow_dispatch:
 
-jobs:
-  scrape:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: dev
+# jobs:
+#   scrape:
+#     runs-on: ubuntu-latest
+#     if: github.ref == 'refs/heads/dev'
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+#         with:
+#           ref: dev
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.8'
+#       - name: Set up Python
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: '3.8'
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
+#       - name: Install system dependencies
+#         run: |
+#           sudo apt-get update
 
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install --no-cache-dir -r requirements.txt
-          playwright install chromium
+#       - name: Install Python dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install --no-cache-dir -r requirements.txt
+#           playwright install chromium
 
-      - name: Debug Python dependencies
-        run: |
-          python --version
-          pip list
-          python -c "import pandas, numpy, playwright; print(f'pandas: {pandas.__version__}, numpy: {numpy.__version__}')"
-        continue-on-error: true  # Allow workflow to proceed if debug fails
+#       - name: Debug Python dependencies
+#         run: |
+#           python --version
+#           pip list
+#           python -c "import pandas, numpy, playwright; print(f'pandas: {pandas.__version__}, numpy: {numpy.__version__}')"
+#         continue-on-error: true  # Allow workflow to proceed if debug fails
 
-      - name: Run the scraper script
-        run: |
-          python pipeline_tcg_scraper.py
+#       - name: Run the scraper script
+#         run: |
+#           python pipeline_tcg_scraper.py
 
-      - name: Debug CSV files
-        if: always()
-        run: |
-          ls -R data/ || echo "No CSV files found"
+#       - name: Debug CSV files
+#         if: always()
+#         run: |
+#           ls -R data/ || echo "No CSV files found"
 
-      - name: Commit and push CSV files
-        if: always()
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          # Add files only if they exist
-          if ls data/ptcg/*.csv data/opcg/*.csv 2>/dev/null; then
-            git add data/ptcg/*.csv data/opcg/*.csv
-            git diff-index --quiet HEAD || (git commit -m "Add daily TCG data CSVs" --allow-empty)
-            git push
-          else
-            echo "No CSV files to commit"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Commit and push CSV files
+#         if: always()
+#         run: |
+#           git config --local user.email "action@github.com"
+#           git config --local user.name "GitHub Action"
+#           # Add files only if they exist
+#           if ls data/ptcg/*.csv data/opcg/*.csv 2>/dev/null; then
+#             git add data/ptcg/*.csv data/opcg/*.csv
+#             git diff-index --quiet HEAD || (git commit -m "Add daily TCG data CSVs" --allow-empty)
+#             git push
+#           else
+#             echo "No CSV files to commit"
+#           fi
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
